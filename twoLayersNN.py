@@ -16,10 +16,10 @@ class TwoLayersNN (object):
         # - By using dictionary (self.params) to store value                    #
         #   with standard normal distribution and Standard deviation = 0.0001.  #
         #########################################################################
-        pass
-
-
-
+        self.params['w1'] = np.random.normal(loc=0.0, scale=0.0001, size=(inputDim, hiddenDim))
+        self.params['b1'] = np.random.normal(loc=0.0, scale=0.0001, size=(1, hiddenDim))
+        self.params['w2'] = np.random.normal(loc=0.0, scale=0.0001, size=(hiddenDim, outputDim))
+        self.params['b2'] = np.random.normal(loc=0.0, scale=0.0001, size=(1, outputDim))
         #########################################################################
         #                       END OF YOUR CODE                                #
         #########################################################################
@@ -58,11 +58,33 @@ class TwoLayersNN (object):
         # - Do forward pass and calculate loss value                                #
         # - Do backward pass and calculate derivatives for each weight and bias     #
         #############################################################################
-        pass
+        h = x.dot(self.params['w1']) + self.params['b1']
+        h = np.maximum(0.01 * h, h)
+        s = h.dot(self.params['w2']) + self.params['b2']
+        s = np.maximum(0.01 * s, s)
 
+        if y is None and reg is None:
+            return s
 
+        s = s - np.amax(s, axis=1, keepdims=True)
+        exp_s = np.exp(s)
+        probs = exp_s / np.sum(exp_s, axis=1, keepdims=True)
+        loss = -1 * np.sum(np.log(probs[range(len(y)), y]))
+        loss /= len(y)
+        loss += reg * np.sum(self.params['w1'] * self.params['w1']) + (
+            reg * np.sum(self.params['w2'] * self.params['w2']))
 
+        ds = probs
+        ds[range(len(y)), y] -= 1
+        ds /= len(y)
 
+        grads['w2'] = h.T.dot(ds) + 2 * reg * self.params['w2']
+        grads['b2'] = np.sum(ds, axis=0)
+
+        dh = ds.dot(self.params['w2'].T)
+        dh = (h > 0) * dh
+        grads['w1'] = x.T.dot(dh) + 2 * reg * self.params['w1']
+        grads['b1'] = np.sum(dh, axis=0)
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################
@@ -105,12 +127,15 @@ class TwoLayersNN (object):
             # Hint:                                                                 #
             # - Use np.random.choice                                                #
             #########################################################################
-            pass
+            sample_indices = np.random.choice(np.arange(x.shape[0]), batchSize)
 
+            loss, grads = self.calLoss(x[sample_indices], y[sample_indices], reg)
+            self.params['w1'] += -lr * grads['w1']
+            self.params['b1'] += -lr * grads['b1']
+            self.params['w2'] += -lr * grads['w2']
+            self.params['b2'] += -lr * grads['b2']
 
-
-
-
+            lossHistory.append(loss)
             #########################################################################
             #                       END OF YOUR CODE                                #
             #########################################################################
@@ -137,10 +162,7 @@ class TwoLayersNN (object):
         # TODO: 10 points                                                         #
         # -  Store the predict output in yPred                                    #
         ###########################################################################
-        pass
-
-
-
+        yPred = np.argmax(self.calLoss(x, None, None), axis=1)
         ###########################################################################
         #                           END OF YOUR CODE                              #
         ###########################################################################
@@ -153,10 +175,7 @@ class TwoLayersNN (object):
         # TODO: 10 points                                                         #
         # -  Calculate accuracy of the predict value and store to acc variable    #
         ###########################################################################
-        pass
-
-
-
+        acc = np.mean(self.predict(x) == y) * 100
         ###########################################################################
         #                           END OF YOUR CODE                              #
         ###########################################################################

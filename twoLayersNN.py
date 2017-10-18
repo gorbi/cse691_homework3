@@ -76,15 +76,14 @@ class TwoLayersNN (object):
 
         ds = probs
         ds[range(len(y)), y] -= 1
-        ds /= len(y)
 
-        grads['w2'] = h.T.dot(ds) + 2 * reg * self.params['w2']
+        grads['w2'] = ((1 / len(y)) * h.T.dot(ds)) + 2 * reg * self.params['w2']
         grads['b2'] = np.sum(ds, axis=0)
 
         dh = ds.dot(self.params['w2'].T)
-        dh = (h > 0) * dh
-        grads['w1'] = x.T.dot(dh) + 2 * reg * self.params['w1']
-        grads['b1'] = np.sum(dh, axis=0)
+        dh_prime = (h > 0) * dh
+        grads['w1'] = ((1 / len(y)) * x.T.dot(dh_prime)) + 2 * reg * self.params['w1']
+        grads['b1'] = np.sum(dh_prime, axis=0)
         #############################################################################
         #                          END OF YOUR CODE                                 #
         #############################################################################

@@ -132,8 +132,8 @@ bestModel = None
 # - Store the best accuracy in bestAcc                                         #
 # - Best Model should get validation accuracy above 35%                        #
 ################################################################################
-learningRates = 1e-3 * np.linspace(7, 8, num=3)
-regularizationStrengths = 1e-2 * np.linspace(1, 3, num=3)
+learningRates = 1e-3 * np.linspace(7, 9, num=3)
+regularizationStrengths = 3e-3 * np.linspace(5, 7, num=3)
 
 for learningRate in learningRates:
     for regularizationStrength in regularizationStrengths:

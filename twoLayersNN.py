@@ -82,6 +82,7 @@ class TwoLayersNN (object):
 
         dh = ds.dot(self.params['w2'].T)
         dh_prime = (h > 0) * dh
+        dh_prime += np.logical_not(h > 0) * 0.01 * dh
         grads['w1'] = ((1 / len(y)) * x.T.dot(dh_prime)) + 2 * reg * self.params['w1']
         grads['b1'] = np.sum(dh_prime, axis=0)
         #############################################################################
